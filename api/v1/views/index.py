@@ -1,34 +1,31 @@
 #!/usr/bin/python3
-'''Contains the index view for the API.'''
-from flask import jsonify
-
+"""
+Basic setup to return count of each class in db
+"""
 from api.v1.views import app_views
-from models import storage
-from models.amenity import Amenity
-from models.city import City
-from models.place import Place
-from models.review import Review
-from models.state import State
-from models.user import User
+from flask import jsonify
 
 
 @app_views.route('/status')
-def get_status():
-    '''Gets the status of the API'''
-    return jsonify(status='OK')
+def status():
+    return jsonify({'status': "Ok"})
 
 
-@app_views.route('/stats')
-def get_stats():
-    '''Gets the number of objects for each type'''
-    objects = {
-        'amenities': Amenity,
-        'cities': City,
-        'places': Place,
-        'reviews': Review,
-        'states': State,
-        'users': User
-    }
-    for key, value in objects.items():
-        objects[key] = storage.count(value)
-    return jsonify(objects)
+@app_views.route('/stats', methods=['GET'])
+def stats():
+    """
+    from models import storage
+    obj_counts = {}
+    classes = self.__models_available.keys()
+    for cls in classes:
+        obj_counts[cls] = self.count(cls)
+    return obj_counts
+    """
+    from models import storage
+    models_available = ["User", "Amenity", "City", "Place", "Review", "State"]
+    formats = {"User": "users", "Amenity": "amenities", "City": "cities",
+               "Place": "places", "Review": "reviews", "State": "states"}
+    output = {}
+    for model in models_available:
+        output[formats[model]] = storage.count(model)
+    return jsonify(output)

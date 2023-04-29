@@ -1,50 +1,31 @@
 #!/usr/bin/python3
-'''Contains a Flask web application API.
-'''
-import os
-from flask import Flask, jsonify
-from flask_cors import CORS
-
-from models import storage
+"""
+This module starts a rest api.
+"""
 from api.v1.views import app_views
+from flask import Flask, jsonify, make_response
+from flask_cors import CORS, cross_origin
+from models import storage
+import os
 
 
 app = Flask(__name__)
-'''The Flask web application instance.'''
-app_host = os.getenv('HBNB_API_HOST', '0.0.0.0')
-app_port = int(os.getenv('HBNB_API_PORT', '5000'))
-app.url_map.strict_slashes = False
 app.register_blueprint(app_views)
-CORS(app, resources={'/*': {'origins': app_host}})
+CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
 
 
 @app.teardown_appcontext
-def teardown_flask(exception):
-    '''The Flask app/request context end event listener.'''
-    # print(exception)
+def store_close(exception=None):
+    """ closes the storage on exit """
     storage.close()
 
 
 @app.errorhandler(404)
-def error_404(error):
-    '''Handles the 404 HTTP error code.'''
-    return jsonify(error='Not found'), 404
+def page_not_found(error):
+    """ Custom 404 handler in Json"""
+    return make_response(jsonify({'error': "Not found"}), 404)
 
 
-@app.errorhandler(400)
-def error_400(error):
-    '''Handles the 400 HTTP error code.'''
-    msg = 'Bad request'
-    if isinstance(error, Exception) and hasattr(error, 'description'):
-        msg = error.description
-    return jsonify(error=msg), 400
-
-
-if __name__ == '__main__':
-    app_host = os.getenv('HBNB_API_HOST', '0.0.0.0')
-    app_port = int(os.getenv('HBNB_API_PORT', '5000'))
-    app.run(
-        host=app_host,
-        port=app_port,
-        threaded=True
-    )
+if __name__ == "__main__":
+    app.run(host=os.environ.get('HBNB_API_HOST'),
+            port=os.environ.get('HBNB_API_PORT'))
