@@ -1,31 +1,29 @@
 #!/usr/bin/python3
 """
-Basic setup to return count of each class in db
+This module contains endpoint(route) status
 """
+from models import storage
+from flask import Flask
 from api.v1.views import app_views
 from flask import jsonify
 
 
-@app_views.route('/status')
+@app_views.route('/status', strict_slashes=False)
 def status():
-    return jsonify({'status': "Ok"})
+    """
+    Returns a JSON status
+    """
+    return jsonify({"status": "OK"})
 
 
-@app_views.route('/stats', methods=['GET'])
-def stats():
+@app_views.route('/stats', strict_slashes=False)
+def count():
     """
-    from models import storage
-    obj_counts = {}
-    classes = self.__models_available.keys()
-    for cls in classes:
-        obj_counts[cls] = self.count(cls)
-    return obj_counts
+    Retrieves the number of each objects by type
     """
-    from models import storage
-    models_available = ["User", "Amenity", "City", "Place", "Review", "State"]
-    formats = {"User": "users", "Amenity": "amenities", "City": "cities",
-               "Place": "places", "Review": "reviews", "State": "states"}
-    output = {}
-    for model in models_available:
-        output[formats[model]] = storage.count(model)
-    return jsonify(output)
+    return jsonify({"amenities": storage.count("Amenity"),
+                    "cities": storage.count("City"),
+                    "places": storage.count("Place"),
+                    "reviews": storage.count("Review"),
+                    "states": storage.count("State"),
+                    "users": storage.count("User")})
